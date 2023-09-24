@@ -1,0 +1,39 @@
+{% extends "app/layout.html" %}
+
+{% block title %}
+Login
+{% endblock %}
+
+{% block body %}
+
+
+
+    <div class="form-card">
+        <h2 class="mb-3">Login</h2>
+        {% if message %}
+            <div>{{ message }}</div>
+        {% endif %}
+        <form action="{% url 'login' %}" method="post" class="pb-3">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-floating mb-3">
+                    {{ field.errors }}
+                    <input type="{{ field.field.widget.input_type }}"
+                        class="form-control"
+                        id="{{ field.id_for_label }}"
+                        name="{{ field.name }}"
+                        required>
+                    <label for="{{ field.id_for_label }}">{{ field.label_tag }}</label>
+                </div>
+            {% endfor %}
+            <div class="text-center">
+                <button class="btn btn-danger" type="submit">Login</button>
+            </div>
+        </form>
+        Don't have an account? <a href="{% url 'register' %}">Register here.</a>
+    </div>
+
+
+
+
+{% endblock %}

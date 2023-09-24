@@ -1,0 +1,39 @@
+{% extends "app/layout.html" %}
+
+{% block title %}
+Register
+{% endblock %}
+
+{% block body %}
+
+<div class="form-card">
+    <h2 class="mb-3">Register</h2>
+
+    {% if message %}
+        <div>{{ message }}</div>
+    {% endif %}
+
+    <form action="{% url 'register' %}" method="post" class="pb-3">
+        {% csrf_token %}
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-floating pb-3">
+                {{ field.errors }}
+                <input type="{{ field.field.widget.input_type }}"
+                    class="form-control"
+                    id="{{ field.id_for_label }}"
+                    name="{{ field.name }}"
+                    value="{{ field.value|default:'' }}"
+                    required>
+                <label for="{{ field.id_for_label }}">{{ field.label_tag }}</label>
+            </div>
+        {% endfor %}
+        <div class="text-center">
+            <button class="btn btn-danger" type="submit">Register</button>
+        </div>
+    </form>
+    Already have an account? <a href="{% url 'login' %}">Log In here.</a>
+</div>
+
+
+{% endblock %}
