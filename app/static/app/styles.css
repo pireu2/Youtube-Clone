@@ -20,7 +20,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
+    font-family:'Montserrat', sans-serif;
 }
 
 .bx{
@@ -144,6 +144,16 @@ body{
         flex-direction: column;
         align-items: flex-start;
     }
+
+    .latest-videos{
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 1rem !important;
+        
+    }
+
 }
 
 .avatar-container {
@@ -352,10 +362,14 @@ body{
 
 .recommended-vid{
     display: grid;
-    height: 10rem;
+    height: 12rem;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
-    cursor:pointer;
+    cursor: pointer;
+    background-color: var(--dark);
+    border-radius: 2rem;
+    padding: 1rem;
+    width: 100%;
 }
 
 .vid-item{
@@ -363,8 +377,8 @@ body{
     padding: 0;
     border-radius: 5px;
     overflow: hidden;
-    width: 180px;
-    height: 130px;
+    width: 200px;
+    height: 115px;
 }
 
 .vid-item video{
@@ -396,4 +410,84 @@ body{
 .grey{
     background-color: var(--grey) !important;
     border-color: var(--dark) !important;
+}
+
+.latest{
+    padding: 1rem;
+}
+
+.latest-videos{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+}
+
+.latest-vid:empty{
+    display: none;
+}
+
+.latest-vid{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    cursor: pointer;
+    background-color: var(--dark);
+    border-radius: 2rem;
+}
+
+.latest-vid-item{
+    margin: 1rem;
+    padding: 0;
+    border-radius: 5px;
+    overflow: hidden;
+    width: 350;
+    height: 200px;
+}
+
+.latest-vid-item video{
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.subscribed{
+    padding: 1rem;
+}
+
+.profile-avatar{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap:1rem;
+    padding: 2rem;
+}
+
+.profile-avatar p{
+    font-size: large;
+    margin: 0;
+}
+
+.profile-avatar-container {
+    width: 200px;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 50%;
+}
+  
+.profile-avatar-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.search{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
 }

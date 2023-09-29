@@ -16,7 +16,43 @@ from . import forms
 
 
 def index(request):
-    return render(request, "app/index.html")
+    if request.method != "GET":
+        return render(request, "app/error.html", {"message": "GET method required."})
+    latest_vids = Video.objects.all()
+    latest_vids = latest_vids.order_by("-timestamp")
+    latest_vids = latest_vids[:12]
+    if request.user.is_authenticated:
+        sub_values = [
+            sub.creator for sub in Subscription.objects.filter(subscriber=request.user)
+        ]
+        subbed_vids = Video.objects.filter(creator__in=sub_values)
+        subbed_vids = subbed_vids[:12]
+    else:
+        subbed_vids = []
+    return render(
+        request,
+        "app/index.html",
+        {"latest_vids": latest_vids, "subbed_vids": subbed_vids},
+    )
+
+
+def latest(request):
+    if request.method != "GET":
+        return render(request, "app/error.html", {"message": "GET method required."})
+    latest_vids = Video.objects.all()
+    latest_vids = latest_vids.order_by("-timestamp")
+    return render(request, "app/latest.html", {"latest_vids": latest_vids})
+
+
+@login_required
+def subscribed(request):
+    if request.method != "GET":
+        return render(request, "app/error.html", {"message": "GET method required."})
+    sub_values = [
+        sub.creator for sub in Subscription.objects.filter(subscriber=request.user)
+    ]
+    subbed_vids = Video.objects.filter(creator__in=sub_values)
+    return render(request, "app/subscribed.html", {"subbed_vids": subbed_vids})
 
 
 def login_view(request):
@@ -109,7 +145,7 @@ def upload(request):
                 return HttpResponseRedirect(reverse("index"))
     else:
         form = forms.VideoForm()
-    return render(request, "app/upload.html", {"form": form})
+        return render(request, "app/upload.html", {"form": form})
 
 
 def watch(request, id):
@@ -265,7 +301,45 @@ def comment(request):
             "status": 200,
             "avatarurl": request.user.avatar.url,
             "timestamp": formatted_datetime,
-            "comments": video.comments
+            "comments": video.comments,
         },
         status=200,
     )
+
+
+def profile(request, username):
+    try:
+        current_user = User.objects.get(username = username)
+    except User.DoesNotExist:
+        return render(request, "app/error.html", {"message": "User does not exist"})
+    videos = Video.objects.filter(creator=current_user)
+    videos.order_by('-timestamp')
+    subbed = (
+                Subscription.objects.filter(
+                    creator=current_user, subscriber=request.user
+                ).exists()
+                if request.user.is_authenticated
+                else False
+            )
+    return render(request, 'app/profile.html', {"current_user": current_user, "videos": videos, "subbed": subbed})
+
+@login_required
+def change(request):
+    if request.method == 'GET':
+        form = forms.PicureForm()
+        return render(request, 'app/change.html', {"form": form})
+    else:
+        form = forms.PicureForm(request.POST, request.FILES)
+        if form.is_valid():
+            avatar = form.cleaned_data['avatar']
+            user = User.objects.get(username = request.user.username)
+            user.avatar = avatar
+            user.save()
+            return HttpResponseRedirect(reverse('profile', args=(user.username,)))
+        
+def search(request, input):
+    if request.method != "GET":
+        return render(request, "app/error.html", {"message": "GET method required."})
+    videos = Video.objects.filter(title__icontains=input)
+    videos = videos.order_by("-timestamp")
+    return render(request, "app/search.html", {"videos": videos, "input":input})
