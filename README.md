@@ -8,6 +8,10 @@ All my pages are mobile responsive. </br>
 # Distinctiveness and Complexity
 My project is different from all the other projects in this course, because I put a lot of effort in making the website look modern and mobile responsive, also my project is the only one to manage files and to post the to different directories in the django project.</br>
 Another unique thing about my project is the customization that each user has. Every user can change their profile picture and upload any videos they want. In his way, they can build a strong community around their uploads. </br>
+A major part of my project developement was put in the responsivity of the website and the ui design. I chose to inspire myself from the Youtube Dark Theme but I made my own logo and color scheme. For the reactive part, I implemented a very cool description hide and show feature that looks very good. Also, I added features like you can like and dislike the same video, if you like a video and then press dislike, the like gets remove. </br>
+Another important point about my project was the usage of custom css. In my project I used a few bootstrap components like the navbar and some input groups and buttons, but i added my own css on top of that to achieve my design and everything else uses my own css for every component. </br>
+I chose to make separete javascript files for every script I made for better visibility and to only include the scripts I need for every page. </br>
+For almost any Model I used I tried to use the built-it django models for using their good validation of the data, but when that wasn't possible with the comments especially I put a lot of effort in making everything secure for the users of the application. </br>
 
 # Files and Directories
 - `app` - main application directiory
