@@ -24,12 +24,39 @@
             {% if subbed %}
                 <input id="subscribe" type="submit" class="btn btn-danger grey" value="Subscribed" name="subscribe">
             {% else %}
-                <input id="subscribe" type="submit" class="btn btn-danger" value="Subscribe" name="subscribe">
+                <input id="subscribe" type="submit" class="btn btn-danger" style="background-color: var(--primary); border-color: var(--accent);" value="Subscribe" name="subscribe">
+            {% endif %}
+            {% if current_user.has_card %}
+            <div class="form-card">
+                <form action="/donate/{{current_user.username}}" method="post" enctype="multipart/form-data" class="pb-3">
+                    {% csrf_token %}
+                    <div class="form-floating mb-3">
+                        <input type="number"
+                            class="form-control"
+                            id="amount"
+                            name="amount"
+                            required>
+                        <label for="amount">Amount</label>
+                    </div>
+                    <div class="text-center">
+                        <button class="btn btn-danger" type="submit">Donate</button>
+                    </div>
+                </form>
+            </div>
             {% endif %}
         {% else %}
         <a href="/change">
             <input id="#change" type="submit" class="btn btn-danger grey" value="Change profile picture" name="change">
         </a>
+        {% if user.has_card %}
+            <a href = "/add_card">
+                <button class="btn btn-danger" style="background-color: var(--primary); border-color: var(--accent);" type="submit">Change Card</button>
+            </a>
+        {% else %}
+            <a href = "/add_card">
+                <button class="btn btn-danger" style="background-color: var(--primary); border-color: var(--accent);" type="submit">Add Card</button>
+            </a>
+        {% endif %}
         {% endif %}
     </div>
     <div class="latest">
@@ -49,6 +76,8 @@
                         <p>{{vid.timestamp | date:"Y-m-d"}}</p>
                     </div>
                 </div>
+                {% empty %}
+                <h5>No videos</h5>
             {% endfor %}
         </div>
     </div>

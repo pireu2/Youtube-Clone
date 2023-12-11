@@ -67,6 +67,7 @@
               <ul class="navbar-nav ms-auto">
                 {% if user.is_authenticated %}
                   <li class="nav-item" id="user-nav">
+                    
                     <div class="avatar-container-nav" id="redirect" data-username="{{user.username}}">
                       <img class="avatar" src="{{user.avatar.url}}">
                     </div>
@@ -75,8 +76,13 @@
                     </div>
                   </li>
                   <li class="nav-item">
+                    <a class="nav-link" href="{% url 'add_funds' %}">Balance: {{user.get_wallet_balance}}$</a>
+                  </li>
+                  <li class="nav-item">
                     <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
                   </li>
+                  
+                  
                   {% else %}
                   {% endif %}
               </ul>

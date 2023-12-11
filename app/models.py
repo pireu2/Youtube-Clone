@@ -16,6 +16,31 @@ class User(AbstractUser):
     )
     subscribers = models.IntegerField(default=0)
 
+    def get_wallet_balance(self):
+        wallet = Wallet.objects.get(user=self)
+        return wallet.balance
+    
+    def has_card(self):
+        wallet = Wallet.objects.get(user=self)
+        return True if wallet.card else False
+
+
+class Card(models.Model):
+    number = models.CharField(max_length=16, blank=False)
+    expiration_date = models.DateField(blank=False)
+    cvv = models.CharField(max_length=3, blank=False)
+
+    def __str__(self):
+        return f"{self.number} - {self.cvv}"
+
+class Wallet(models.Model):
+    card = models.OneToOneField(Card, on_delete=models.SET_NULL, blank=True, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, blank=False)
+    balance = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.balance}"
+
 
 class Video(models.Model):
     id = models.AutoField(primary_key=True)

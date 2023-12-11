@@ -20,7 +20,10 @@ urlpatterns = [
     path("subscribed", views.subscribed, name="subscribed"),
     path("profile/<str:username>", views.profile, name="profile"),
     path("change", views.change, name="change"),
-    path("search/<str:input>", views.search, name="search")
+    path("search/<str:input>", views.search, name="search"),
+    path("add_card/", views.add_card, name="add_card"),
+    path("add_funds/", views.add_funds, name="add_funds"),
+    path("donate/<str:username>", views.donate, name="donate")
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

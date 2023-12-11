@@ -1,6 +1,12 @@
 from django import forms
-from .models import Video, Comment, User
+from .models import Video, Comment, User, Card, Wallet
 
+
+class CardForm(forms.Form):
+    number =  forms.CharField(label="Card Number", required=True)
+    expiration_date =  forms.DateField(label="Expiration Date", required=True)
+    cvv =  forms.CharField(label="CVV", required=True)
+    
 
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=64, label="Username", required=True)

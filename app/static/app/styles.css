@@ -89,6 +89,16 @@ body{
     border-color: var(--accent);
 }
 
+.add-card button{
+    background-color: var(--primary);
+    border-color: var(--accent);
+}
+
+.add-card button:hover{
+    background-color: var(--light-primary);
+    border-color: var(--accent);
+}
+
 .form-card a{
     color: var(--light-primary);
 }
