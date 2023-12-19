@@ -20,13 +20,13 @@ def index(request):
         return render(request, "app/error.html", {"message": "GET method required."})
     latest_vids = Video.objects.all()
     latest_vids = latest_vids.order_by("-timestamp")
-    latest_vids = latest_vids[:12]
+    latest_vids = latest_vids[:3]
     if request.user.is_authenticated:
         sub_values = [
             sub.creator for sub in Subscription.objects.filter(subscriber=request.user)
         ]
         subbed_vids = Video.objects.filter(creator__in=sub_values)
-        subbed_vids = subbed_vids[:12]
+        subbed_vids = subbed_vids[:3]
     else:
         subbed_vids = []
     return render(
@@ -405,14 +405,14 @@ def add_card(request):
         form = forms.CardForm(request.POST)
         if form.is_valid():
             card_number = str(form.cleaned_data['number'])
-            expiration_date = datetime(form.cleaned_data['expiration_date'])
+            expiration_date = form.cleaned_data['expiration_date']
             cvv = str(form.cleaned_data['cvv'])
 
             if len(card_number)  != 16:
                 return render(
                     request, "app/error.html", {"message": "Invalid card number."}
                 )
-            if expiration_date < datetime.now():
+            if expiration_date < datetime.date(datetime.now()):
                 return render(
                     request, "app/error.html", {"message": "Card Expired."}
                 )
@@ -433,7 +433,8 @@ def add_card(request):
                     prev_card =  wallet.card
                     wallet.card = card
                     wallet.save()
-                    prev_card.delete()
+                    if prev_card:
+                        prev_card.delete()
                
             return HttpResponseRedirect(reverse('profile', args=(request.user.username,)))
         
