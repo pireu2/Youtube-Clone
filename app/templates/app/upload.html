@@ -4,6 +4,22 @@
 Upload Video
 {% endblock %}
 
+
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('upload-form');
+        const spinner = document.getElementById('loading-spinner');
+        const button = document.getElementById('upload-button');
+
+        form.addEventListener('submit', function() {
+            button.disabled = true;
+            spinner.style.display = 'block';
+        });
+    });
+</script>
+{% endblock %}
+
 {% block body %}
 <div class="form-card">
     <h2 class="mb-3">Upload Video</h2>
@@ -12,14 +28,14 @@ Upload Video
         <div>{{ message }}</div>
     {% endif %}
 
-    <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data" class="pb-3">
+    <form id="upload-form" action="{% url 'upload' %}" method="post" enctype="multipart/form-data" class="pb-3">
         {% csrf_token %}
         <div class="mb-3">
             {{ form.video.errors }}
             <div class="text-center">
                 <label for="{{ form.video.id_for_label }}" class="form-label">{{ form.video.label_tag }}</label>
             </div>
-            <input class="form-control" type="file" id="{{ form.video.id_for_label }}"  name="{{ form.video.name }}" required>
+            <input class="form-control" type="file" id="{{ form.video.id_for_label }}"  name="{{ form.video.name }}" accept=".mp4" required>
         </div>
         <div class="form-floating mb-3">
             {{ form.title.errors }}
@@ -38,11 +54,14 @@ Upload Video
                         style="height: 10rem;"></textarea>
             <label for="{{ form.description.id_for_label }}">{{ form.description.label_tag }}</label>
         </div>
-        
-        
-        <div class="text-center">
-            <button class="btn btn-danger" type="submit">Upload</button>
+
+        <div class="text-center pb-3">
+            <button id="upload-button" class="btn btn-danger" type="submit">Upload</button>
         </div>
-    </form>
+
+        <div style="display: flex; justify-content: center;">
+            <div id="loading-spinner" class="loader" style="display: none;"></div>
+        </div>
+</form>
 </div>
 {% endblock %}

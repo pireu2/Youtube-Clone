@@ -1,6 +1,8 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.files import File
 from django.core.paginator import Paginator
+from django.conf import settings
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
@@ -8,6 +10,8 @@ from django.urls import reverse
 from django.http import JsonResponse
 
 import json
+import os
+from moviepy import VideoFileClip
 from datetime import datetime
 from .models import User, Video, Comment, Like, Dislike, Subscription, Card, Wallet
 from . import forms
@@ -128,9 +132,9 @@ def upload(request):
         form = forms.VideoForm(request.POST, request.FILES)
         if form.is_valid():
             max_size = 250 * 1024 * 1024
-            video = form.cleaned_data["video"]
+            video_file = form.cleaned_data["video"]
 
-            if video.size > max_size:
+            if video_file.size > max_size:
                 form.add_error("video", "File size must be less than 250 MB.")
             else:
                 title = form.cleaned_data["title"]
@@ -140,11 +144,14 @@ def upload(request):
                     title=title,
                     creator=request.user,
                     description=description,
-                    video=video,
+                    video=video_file,
                     timestamp=timestamp,
                 )
                 video.save()
-                return HttpResponseRedirect(reverse("index"))
+                video.compress_video()
+
+
+                return HttpResponseRedirect(reverse("watch", args=(video.id,)))
     else:
         form = forms.VideoForm()
         return render(request, "app/upload.html", {"form": form})
@@ -311,7 +318,7 @@ def comment(request):
 
 def profile(request, username):
     try:
-        current_user = User.objects.get(username = username)
+        current_user = User.objects.get(username=username)
     except User.DoesNotExist:
         return render(request, "app/error.html", {"message": "User does not exist"})
     try:
@@ -319,77 +326,93 @@ def profile(request, username):
     except Wallet.DoesNotExist:
         has_card = False
     videos = Video.objects.filter(creator=current_user)
-    videos.order_by('-timestamp')
+    videos.order_by("-timestamp")
     subbed = (
-                Subscription.objects.filter(
-                    creator=current_user, subscriber=request.user
-                ).exists()
-                if request.user.is_authenticated
-                else False
-            )
-    return render(request, 'app/profile.html', {"current_user": current_user, "videos": videos, "subbed": subbed, "has_card": has_card})
+        Subscription.objects.filter(
+            creator=current_user, subscriber=request.user
+        ).exists()
+        if request.user.is_authenticated
+        else False
+    )
+    return render(
+        request,
+        "app/profile.html",
+        {
+            "current_user": current_user,
+            "videos": videos,
+            "subbed": subbed,
+            "has_card": has_card,
+        },
+    )
+
 
 @login_required
 def change(request):
-    if request.method == 'GET':
+    if request.method == "GET":
         form = forms.PicureForm()
-        return render(request, 'app/change.html', {"form": form})
+        return render(request, "app/change.html", {"form": form})
     else:
         form = forms.PicureForm(request.POST, request.FILES)
         if form.is_valid():
-            avatar = form.cleaned_data['avatar']
-            user = User.objects.get(username = request.user.username)
+            avatar = form.cleaned_data["avatar"]
+            user = User.objects.get(username=request.user.username)
             user.avatar = avatar
             user.save()
-            return HttpResponseRedirect(reverse('profile', args=(user.username,)))
-        
+            return HttpResponseRedirect(reverse("profile", args=(user.username,)))
+
+
 @login_required
 def add_funds(request):
-    if request.method == 'GET':
-        card = Wallet.objects.get(user = request.user).card
-        if not card:
+    if request.method == "GET":
+        try:
+            Wallet.objects.get(user=request.user).card
+        except Wallet.DoesNotExist:
             return render(
-            request, "app/error.html", {"message": "You must have a card to add Funds."}
-        )
+                request,
+                "app/error.html",
+                {"message": "You must have a card to add Funds."},
+            )
         return render(request, "app/add_funds.html")
     else:
-        amount = int(request.POST['amount'])
+        amount = int(request.POST["amount"])
         wallet = Wallet.objects.get(user=request.user)
         wallet.balance += int(amount)
         wallet.save()
-        return HttpResponseRedirect(reverse('profile', args=(request.user.username,)))
-    
+        return HttpResponseRedirect(reverse("profile", args=(request.user.username,)))
+
+
 @login_required
 def donate(request, username):
-    if request.method != 'POST':
+    if request.method != "POST":
         return JsonResponse({"error": "POST request required."}, status=400)
     if username == request.user.username:
-         return render(
+        return render(
             request, "app/error.html", {"message": "Can't donate to yourself."}
         )
-    current_user = User.objects.get(username = username)
+    current_user = User.objects.get(username=username)
     try:
         donator_wallet = Wallet.objects.get(user=request.user)
         wallet = Wallet.objects.get(user=current_user)
     except Wallet.DoesNotExist:
-        return render(request, 'app/error.html', {'message': 'User does not have a wallet.'})
+        return render(
+            request, "app/error.html", {"message": "User does not have a wallet."}
+        )
 
-    amount = request.POST['amount']
+    amount = request.POST["amount"]
     amount = int(amount)
     if amount <= 0:
         return render(
             request, "app/error.html", {"message": "Can't negative ammounts!"}
         )
-    if amount > donator_wallet.balance :
-        return render(
-            request, "app/error.html", {"message": "Insufficiend funds!"}
-        )
+    if amount > donator_wallet.balance:
+        return render(request, "app/error.html", {"message": "Insufficiend funds!"})
 
     donator_wallet.balance -= amount
     donator_wallet.save()
     wallet.balance += amount
     wallet.save()
-    return HttpResponseRedirect(reverse('profile', args=(username,)))
+    return HttpResponseRedirect(reverse("profile", args=(username,)))
+
 
 @login_required
 def add_card(request):
@@ -398,50 +421,52 @@ def add_card(request):
         has_card = True if Wallet.objects.get(user=request.user).card else False
     except Wallet.DoesNotExist:
         has_card = False
-    if request.method == 'GET':
+    if request.method == "GET":
         form = forms.CardForm()
-        return render(request, 'app/add_card.html', {"form": form, "has_card": has_card})
+        return render(
+            request, "app/add_card.html", {"form": form, "has_card": has_card}
+        )
     else:
         form = forms.CardForm(request.POST)
         if form.is_valid():
-            card_number = str(form.cleaned_data['number'])
-            expiration_date = form.cleaned_data['expiration_date']
-            cvv = str(form.cleaned_data['cvv'])
+            card_number = str(form.cleaned_data["number"])
+            expiration_date = form.cleaned_data["expiration_date"]
+            cvv = str(form.cleaned_data["cvv"])
 
-            if len(card_number)  != 16:
+            if len(card_number) != 16:
                 return render(
                     request, "app/error.html", {"message": "Invalid card number."}
                 )
             if expiration_date < datetime.date(datetime.now()):
-                return render(
-                    request, "app/error.html", {"message": "Card Expired."}
-                )
+                return render(request, "app/error.html", {"message": "Card Expired."})
             if len(cvv) != 3:
                 return render(
-                        request, "app/error.html", {"message": "Invalid cvv number."}
-                    )
+                    request, "app/error.html", {"message": "Invalid cvv number."}
+                )
 
-
-            card = Card(number=card_number,expiration_date=expiration_date, cvv=cvv)
+            card = Card(number=card_number, expiration_date=expiration_date, cvv=cvv)
             card.save()
             if not has_wallet:
-                    wallet = Wallet(card=card, user=request.user, balance=0)
-                    wallet.save()
+                wallet = Wallet(card=card, user=request.user, balance=0)
+                wallet.save()
             else:
                 if not has_card:
                     wallet = Wallet.objects.get(user=request.user)
-                    prev_card =  wallet.card
+                    prev_card = wallet.card
                     wallet.card = card
                     wallet.save()
                     if prev_card:
                         prev_card.delete()
-               
-            return HttpResponseRedirect(reverse('profile', args=(request.user.username,)))
-        
+
+            return HttpResponseRedirect(
+                reverse("profile", args=(request.user.username,))
+            )
+
+
 def search(request, input):
 
     if request.method != "GET":
         return render(request, "app/error.html", {"message": "GET method required."})
     videos = Video.objects.filter(title__icontains=input)
     videos = videos.order_by("-timestamp")
-    return render(request, "app/search.html", {"videos": videos, "input":input})
+    return render(request, "app/search.html", {"videos": videos, "input": input})

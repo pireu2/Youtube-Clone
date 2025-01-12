@@ -1,5 +1,6 @@
 /media/avatars/*
 /media/videos/*
+/media/thumbnails/*
 !/media/avatars/default-avatar.png
 *.sqlite3
 

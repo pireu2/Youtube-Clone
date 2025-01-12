@@ -65,10 +65,7 @@
             {% for vid in videos %}
                 <div data-video="{{vid.id}}" class="latest-vid">
                     <div class="latest-vid-item">
-                        <video>
-                            <source src="{{ vid.video.url }}" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
+                        <img src="{{ vid.thumbnail.url }}" alt="{{ vid.title }}">
                     </div>
                     <div class="vid-info">
                         <p class="vid-title">{{vid.title}}</p>

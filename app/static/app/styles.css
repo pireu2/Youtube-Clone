@@ -391,7 +391,7 @@ body{
     height: 115px;
 }
 
-.vid-item video{
+.vid-item img{
     grid-column: 1;
     grid-row: 1;
     width: 100%;
@@ -455,7 +455,7 @@ body{
     height: 200px;
 }
 
-.latest-vid-item video{
+.latest-vid-item img{
     grid-column: 1;
     grid-row: 1;
     width: 100%;
@@ -501,3 +501,17 @@ body{
     justify-content: center;
     gap: 1rem;
 }
+
+.loader {
+    border: 5px solid var(--light); /* Light grey */
+    border-top: 5px solid var(--accent); /* Blue */
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 2s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }

@@ -10,3 +10,7 @@ def delete_video_file(sender, instance, **kwargs):
     if instance.video:
         if os.path.isfile(instance.video.path):
             os.remove(instance.video.path)
+    # Get the path of the thumbnail file and delete it
+    if instance.thumbnail:
+        if os.path.isfile(instance.thumbnail.path):
+            os.remove(instance.thumbnail.path)

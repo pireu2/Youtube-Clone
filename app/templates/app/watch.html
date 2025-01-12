@@ -132,10 +132,7 @@
         {% for vid in vids %}
         <div data-video="{{vid.id}}" class="recommended-vid">
             <div class="vid-item">
-                <video>
-                    <source src="{{ vid.video.url }}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
+                <img src="{{ vid.thumbnail.url }}" alt="{{ vid.title }}">
             </div>
             <div class="vid-info">
                 <p class="vid-title">{{vid.title}}</p>
@@ -143,6 +140,8 @@
                 <p>{{vid.timestamp | date:"Y-m-d"}}</p>
             </div>
         </div>
+        {% empty %}
+        <p>No videos to show</p>
         {% endfor %}
     </div>
 </div>

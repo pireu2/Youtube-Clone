@@ -5,7 +5,10 @@ from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from moviepy import VideoFileClip
 import datetime
+import os
+
 
 # Create your models here.
 
@@ -19,7 +22,7 @@ class User(AbstractUser):
     def get_wallet_balance(self):
         wallet = Wallet.objects.get(user=self)
         return wallet.balance
-    
+
     def has_card(self):
         wallet = Wallet.objects.get(user=self)
         return True if wallet.card else False
@@ -32,6 +35,7 @@ class Card(models.Model):
 
     def __str__(self):
         return f"{self.number} - {self.cvv}"
+
 
 class Wallet(models.Model):
     card = models.OneToOneField(Card, on_delete=models.SET_NULL, blank=True, null=True)
@@ -50,6 +54,7 @@ class Video(models.Model):
         "User", on_delete=models.CASCADE, related_name="uploads"
     )
     video = models.FileField(upload_to="videos/")
+    thumbnail = models.ImageField(upload_to="thumbnails/", null=True, blank=True)
     likes = models.IntegerField(default=0)
     dislikes = models.IntegerField(default=0)
     comments = models.IntegerField(default=0)
@@ -61,6 +66,37 @@ class Video(models.Model):
     def delete(self, *args, **kwargs):
         self.video.delete()
         super().delete(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if not self.thumbnail:
+            self.create_thumbnail()
+
+    def create_thumbnail(self):
+        video_path = self.video.path
+        thumbnail_dir = os.path.join(os.path.dirname(video_path), 'thumbnails')
+        thumbnail_path = os.path.join(thumbnail_dir, os.path.basename(video_path).replace('.mp4', '.jpg'))
+
+        os.makedirs(thumbnail_dir, exist_ok=True)
+
+        with VideoFileClip(video_path) as clip:
+            clip = clip.resized(height=720)
+            clip.save_frame(thumbnail_path, t=0.00)
+
+        self.thumbnail = thumbnail_path
+        self.save()
+
+    def compress_video(self):
+        video_path = self.video.path
+        output_path = video_path.replace('.mp4', '_compressed.mp4')
+        try:
+            with VideoFileClip(video_path) as clip:
+                clip.write_videofile(output_path, codec='libx264', preset='fast', bitrate='2500k')
+            self.video = output_path
+            self.save()
+            os.remove(video_path)
+        except Exception as e:
+            print(f"Error compressing video: {e}")
 
 
 class Comment(models.Model):
