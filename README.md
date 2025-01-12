@@ -3,6 +3,7 @@
  </br>
 YouTV is a YouTube clone where users can upload videos, subscribe to each other, like and dislike videos, post comments, search for videos, and change their profile picture. All pages are mobile responsive.
 
+## Description
 YouTV stands out due to its modern and mobile-responsive design. It manages files and posts them to different directories in the Django project. Users can customize their profiles by changing their profile pictures and uploading videos, fostering a strong community around their uploads.
 
 Key features include:
@@ -13,7 +14,7 @@ Key features include:
 - Separate JavaScript files for better visibility and page-specific inclusion.
 - Secure data validation using Django models.
 
-# Files and Directories
+## Files and Directories
 - `app` - Main application directory
     - `static` - Contains all static content
         - `icon.svg` - Main icon for the website
@@ -51,8 +52,13 @@ Key features include:
     - `videos` - Location of all user videos
     - `videos/thumbnails` - Location of all thumbnails for all videos
 
+## Updates
 
-# Setup
+- Implemented video compression to reduce file size.
+- Added automatic thumbnail generation for uploaded videos.
+
+
+## Setup
 
 ```shell script
 git clone https://github.com/pireu2/Youtube-Clone.git
@@ -71,5 +77,6 @@ When the dependent packages are installed, you can run this command to run your 
 python manage.py runserver
 ```
 
-# Licence
+
+## Licence
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details. 
